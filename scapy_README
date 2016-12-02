@@ -1,0 +1,112 @@
+
+-Scapy works by sending and then receiving packets on a network
+ you can also link the layers in the stack. thus, from ether and upwards the IP to the TCP stack.
+ to stack protocols together, you need to use a '/' delimiter
+
+ anytime scapy sends an error. you can supress it using it this log code.
+    import logging
+    logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
+
+ The IP level is the same one that states the protocol it uses. either another IP or TCP or UDP
+ or you can ICMP for network messaging too.
+
+ So arranging the protocol stack is used craft a packet.
+
+ eg. ip = IP(dst=thetargeturloripAndyoucanuse'/30'forsubnetmask, src=always_localhost, ttl=(1, 4))
+        # this is the IP protocol
+     tcp = TCP(dport=port for the connection)
+        # this is the TCP protocol
+
+      packet = ip/tcp
+        # the packet has it's IP and TCP components.
+        # you chain other non-application protocols too.
+        # this packet is preferably sent at the TCP level using send
+
+      packetp = Ether()/ip/tcp
+        # the ether describes the ethernet link protocol and this packet should be sent at
+        # the ethernet level using sendp
+
+ To send a packet on the dataLink, ethernet link layer, you need to define the interface to send this packet.
+    to send a normal IP packet
+        send(packet)
+     for an ethernet packet
+        sendp(packetp)
+
+
+and then we cannot send a packet without any intent of receiving one more.
+we need to receieve and answer back
+
+    sr1 = send(pakcet) to recieve a single line answer
+    sr = send(packet) and then get a response
+    
+    
+    ** the hexdump function is used for a visual representation of packets, either an usent one or one that is sent and received.
+    ** call bytes on a packet to bring out the visual rep of he packet.
+    ** and the you can call IP(byes(packet)) on any packet to reconstruct such a packet.
+    	-- we call it tcpreplay.
+    
+    ------------------------------
+    	the topmost level protocols are the TCP, ICMP, and then one that you can create by yourself too.
+    	
+   EXAMPLE OF PACKETS.
+   from scapy.all import *
+   
+   url = "localhost"
+   ports = [80, 21, 22, 23, 25, 443]
+   ip = IP(dst=url)
+   tcp = TCP(dport=ports)
+   icmp = ICMP(type=8)
+   eth = ETHER()
+   
+   ETHERNET LAYER PACKET.
+   		pkt = eth/ip/tcp
+   		"Also it is optional but you can choose to add a load or a message to the packet like this:"
+   		pkt = eth/ip/tcp/"GET / HTTP1.1 \r\n\n"
+   		
+  IP LAYER PACKET.
+  		pkt = ip/tcp[/messageorfile]
+  		also the message over here is option.
+   		
+  VIEWING THE HEX REP.
+  	hex = hexdump(pkt)
+  	print(hex)
+  	prints the hex representation of the file.
+  	
+  VIEWING THE BYTES REP.
+  	b = bytes(pkt)
+ 	print(b)
+  
+  CONSTRUCTING FROM THE BYTES REP.
+  	construct using the layer on the packet.
+  	if the packet is an IP level packet.
+  	use;
+  	pkt2 = IP(b)
+  	
+  	else if it an ethernet level packet use;
+  	pkt2 = Ether(b)
+  	
+  METHODS ON A PACKET.
+  ls(pkt) --- shows an overview of the packet
+  pkt.show() --- shows the stack of the protocols and the info within much more like ls but ls is more detailed
+  pkt.summary() --- gives a one line summary of the packet.
+  hexdump(pkt) --- as shown above.
+  bytes(pkt) ---- as shown above.
+  pkt.command(pkt) --- remember I told you you can reconstruct a packet earlier.
+  	this method shows you the command necessary for the packet construction or hownthe acket is constricted.
+  
+     		
+   		
+  apart from the send and the sendp command that send packets without returning  avalue for us to use, there are other function that do
+  just otherwise. they are able to send and then receive data from the network.these are:
+	--- sr --> this send and then receive all packets from the network using the IP layer.
+	--- sr1 --> sends and receive one packet, which is usually an answer to our packet or set of packets from the network.
+
+	--- srp and srp1 are the equivalents of the sr and sr1 respectively except they function with the Ethernet protocol.ie. Ether()
+	
+	
+	NB: when specifying the port in a TCP protocol, use list to specify a list of ports, a tuple to specify a range of ports or a single port number.
+		when specifynig a destination, you can use /30 to signify the subnet of the destination. called subnet masking.
+		or using my nslookup tool you can just perform an nslookup
+		
+		
+
